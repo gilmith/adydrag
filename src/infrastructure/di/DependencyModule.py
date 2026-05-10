@@ -1,0 +1,35 @@
+from injector import Module, singleton, provider
+
+from src.domain.service.ResponseFromRagService import ResponseFromRagService
+from src.application.service.ResponseFromRagServiceImpl import ResponseFromRagServiceImpl
+from src.infrastructure.adapters.ollama.OllamaService import OllamaService
+from src.infrastructure.adapters.mongo.MongoService import MongoService
+from src.infrastructure.adapters.mongo.MongoServiceImpl import MongoServiceImpl
+from src.infrastructure.adapters.ollama.OllamaServiceImpl import OllamaServiceImpl
+from src.infrastructure.config.Settings import Settings
+
+
+class DependencyModule(Module):
+    @singleton
+    @provider
+    def provide_settings(self) -> Settings:
+        return Settings()
+
+    @singleton
+    @provider
+    def provide_db(self, settings: Settings) -> MongoService:
+        return MongoServiceImpl(settings)
+
+    @singleton
+    @provider
+    def provide_ollama(self, settings: Settings) -> OllamaService:
+        if settings.ollama_url:
+            return OllamaServiceImpl(settings)
+        return None
+
+    @singleton
+    @provider
+    def provide_response(self, ollama_service: OllamaService, mongo_service: MongoService, settings: Settings) -> ResponseFromRagService:
+        if ollama_service:
+            return ResponseFromRagServiceImpl(ollama_service, mongo_service, settings)
+        return None
