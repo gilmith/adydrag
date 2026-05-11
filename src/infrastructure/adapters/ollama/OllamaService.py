@@ -1,10 +1,17 @@
 from abc import ABC, abstractmethod
 
+from langchain_core.documents import Document
+from langchain_core.vectorstores import VectorStore
+
 
 class OllamaService(ABC):
 
     @abstractmethod
     def create_user_embeddings(self, query: str) -> list[float]:
+        pass
+
+    @abstractmethod
+    def search_terms_in_user_query(self, query: str, vector_store: VectorStore) -> list[Document]:
         pass
 
     """

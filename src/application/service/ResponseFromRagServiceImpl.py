@@ -15,4 +15,7 @@ class ResponseFromRagServiceImpl(ResponseFromRagService):
     def execute_rag_service(self, query: str):
         if self._olla_service:
             embeddings = self._olla_service.create_user_embeddings(query)
-            logger.info(embeddings)
+            logger.debug(len(embeddings))
+            s
+
+
