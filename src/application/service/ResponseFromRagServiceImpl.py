@@ -15,7 +15,7 @@ class ResponseFromRagServiceImpl(ResponseFromRagService):
     def execute_rag_service(self, query: str):
         if self._olla_service:
             embeddings = self._olla_service.create_user_embeddings(query)
-            logger.debug(len(embeddings))
-            s
+            pre_filter = self._olla_service.search_terms_in_user_query(query)
+            self._mongo_service.search_vector(embeddings, pre_filter)
 
 

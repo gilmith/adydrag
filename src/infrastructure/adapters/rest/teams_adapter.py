@@ -10,8 +10,8 @@ from src.application.service.ResponseFromRagServiceImpl import ResponseFromRagSe
 
 # Inicialización única al arrancar (equivalente a singleton)
 _settings = Settings()
-_mongo = MongoServiceImpl(_settings)
-_ollama = OllamaServiceImpl(_settings) if _settings.ollama_url else None
+_ollama = OllamaServiceImpl(_settings)
+_mongo = MongoServiceImpl(_settings, _ollama.get_embeddings_model())
 _rag_service = ResponseFromRagServiceImpl(_ollama, _mongo, _settings)
 
 # Configuración del adaptador de Teams

@@ -1,4 +1,5 @@
 from injector import Module, singleton, provider
+from langchain_core.embeddings import Embeddings
 
 from src.domain.service.ResponseFromRagService import ResponseFromRagService
 from src.application.service.ResponseFromRagServiceImpl import ResponseFromRagServiceImpl
@@ -17,8 +18,13 @@ class DependencyModule(Module):
 
     @singleton
     @provider
-    def provide_db(self, settings: Settings) -> MongoService:
-        return MongoServiceImpl(settings)
+    def provide_embeddings(self, ollama_service: OllamaService) -> Embeddings:
+        return ollama_service.get_embeddings_model()
+
+    @singleton
+    @provider
+    def provide_db(self, settings: Settings, embeddings: Embeddings) -> MongoService:
+        return MongoServiceImpl(settings, embeddings)
 
     @singleton
     @provider

@@ -11,9 +11,12 @@ class OllamaService(ABC):
         pass
 
     @abstractmethod
-    def search_terms_in_user_query(self, query: str, vector_store: VectorStore) -> list[Document]:
+    def search_terms_in_user_query(self, query: str) -> list[str]:
         pass
 
+    @abstractmethod
+    def get_embeddings_model(self):
+        pass
     """
     # Ejemplo: Supongamos que 'docs' es tu lista de documentos de LangChain (del PDF)
 # docs = text_splitter.split_documents(pdf_pages)

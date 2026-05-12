@@ -17,3 +17,5 @@ class Settings:
         self.chatbot_id = os.getenv("CHATBOT_ID")
         self.chatbot_password = os.getenv("CHATBOT_PASSWORD")
         self.chatbot_tenant_id = os.getenv("CHATBOT_TENANT_ID")
+        self.ollama_model_chat = os.getenv("OLLAMA_MODEL_CHAT")
+        self.mongo_vector_index = os.getenv("MONGO_VECTOR_INDEX")
