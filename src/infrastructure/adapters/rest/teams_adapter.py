@@ -1,45 +1,51 @@
 from botbuilder.core import BotFrameworkAdapter, BotFrameworkAdapterSettings, TurnContext
 from botbuilder.schema import Activity
 import asyncio
-from flask import request
+from injector import inject
 
 from src.infrastructure.config.Settings import Settings
-from src.infrastructure.adapters.mongo.MongoServiceImpl import MongoServiceImpl
-from src.infrastructure.adapters.ollama.OllamaServiceImpl import OllamaServiceImpl
-from src.application.service.ResponseFromRagServiceImpl import ResponseFromRagServiceImpl
+from src.infrastructure.adapters.mongo.MongoService import MongoService
+from src.infrastructure.adapters.ollama.OllamaService import OllamaService
+from src.domain.service.ResponseFromRagService import ResponseFromRagService
+from flask import request as flask_request
 
-# Inicialización única al arrancar (equivalente a singleton)
-_settings = Settings()
-_ollama = OllamaServiceImpl(_settings)
-_mongo = MongoServiceImpl(_settings, _ollama.get_embeddings_model())
-_rag_service = ResponseFromRagServiceImpl(_ollama, _mongo, _settings)
 
-# Configuración del adaptador de Teams
-settings = BotFrameworkAdapterSettings(_settings.chatbot_id, _settings.chatbot_password, _settings.chatbot_tenant_id)
-adapter = BotFrameworkAdapter(settings)
+class TeamsAdapter:
+    @inject
+    def __init__(self, settings: Settings, ollama_service: OllamaService, mongo_service: MongoService, response_service: ResponseFromRagService):
+        self._settings = settings
+        self._ollama_service = ollama_service
+        self._mongo_service = mongo_service
+        self._response_service = response_service
+        adapter_settings = BotFrameworkAdapterSettings('', '')
+        self.adapter = BotFrameworkAdapter(adapter_settings)
 
-def process_message(body):
-    """
-    Recibe el body desde Connexion y delega la lógica RAG al servicio.
-    """
-    response = _rag_service.execute_rag_service(body['message'])
+    def process_message(self):
+        body = flask_request.get_json(force=True, silent=True)
 
-    activity = Activity().deserialize(body)
-    auth_header = request.headers.get("Authorization", "")
+        if not body:
+            return {"status": "error", "message": "Request body is empty or not valid JSON"}, 400
 
-    async def logic(turn_context: TurnContext):
-        if turn_context.activity.type == "message":
-            user_text = turn_context.activity.text
-            print(f"El usuario dice: {user_text}")
-            await turn_context.send_activity(response)
+        activity = Activity.deserialize(body)
+        if not activity:
+            return {"status": "error", "message": "Could not deserialize Activity"}, 400
 
-    try:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(adapter.process_activity(activity, auth_header, logic))
-        loop.close()
+        auth_header = flask_request.headers.get("Authorization", "")
 
-        return {"status": "sent"}, 201
-    except Exception as e:
-        print(f"Error al responder: {e}")
-        return {"status": "error", "message": str(e)}, 500
+        async def logic(turn_context: TurnContext):
+            if turn_context.activity.type == "message":
+                user_text = turn_context.activity.text
+                print(f"El usuario dice: {user_text}")
+                response = self._response_service.execute_rag_service(user_text)
+                await turn_context.send_activity(response)
+
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(self.adapter.process_activity(activity, auth_header, logic))
+            loop.close()
+
+            return {"status": "sent"}, 201
+        except Exception as e:
+            print(f"Error al responder: {e}")
+            return {"status": "error", "message": str(e)}, 500

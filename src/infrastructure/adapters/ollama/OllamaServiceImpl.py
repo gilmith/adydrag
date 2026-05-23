@@ -1,3 +1,6 @@
+from langchain_classic.chains.summarize import load_summarize_chain
+from langchain_community.llms.ollama import Ollama
+from langchain_core.documents import Document
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
@@ -11,6 +14,24 @@ class OllamaServiceImpl(OllamaService):
 
 
     """reconocimiento de entidad nombradas"""
+
+    def summarize_result(self, result: list[Document], input_query: str):
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", "Eres un dungeon master experimentado y tienes que responder las preguntas de un jugador respecto a los hechizos de mago y de sacerdote. Responde siempre en español."),
+            ("human", "Usando el siguiente contexto:\n\n{text}\n\nResponde a esta pregunta: {input_query}")
+        ])
+
+        chain = load_summarize_chain(
+            llm=self._ollama_chat,
+            chain_type="stuff",
+            prompt=prompt,
+            document_variable_name="text"
+        )
+
+        summarize_result = chain.invoke({"input_documents": result, "input_query": input_query})
+        logger.info(summarize_result)
+        return summarize_result.get('output_text', '')
+
 
     def get_embeddings_model(self):
         return self._embeddings_service
@@ -39,8 +60,9 @@ class OllamaServiceImpl(OllamaService):
         )
         self._ollama_chat = ChatOllama(
                 model=settings.ollama_model_chat,
-                temperature=0
+                temperature=0.3
         )
+        self._llm = Ollama(model=settings.ollama_model_chat, temperature=0.3)
 
     def create_user_embeddings(self, query: str) -> list[float]:
         return self._embeddings_service.embed_query(query)

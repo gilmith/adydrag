@@ -1,5 +1,7 @@
 from typing import Optional
 
+from langchain_classic.retrievers import SelfQueryRetriever
+
 from src.domain.service.ResponseFromRagService import ResponseFromRagService
 from src.infrastructure.adapters.ollama.OllamaService import OllamaService
 from src.infrastructure.adapters.mongo.MongoService import MongoService
@@ -15,7 +17,10 @@ class ResponseFromRagServiceImpl(ResponseFromRagService):
     def execute_rag_service(self, query: str):
         if self._olla_service:
             embeddings = self._olla_service.create_user_embeddings(query)
-            pre_filter = self._olla_service.search_terms_in_user_query(query)
-            self._mongo_service.search_vector(embeddings, pre_filter)
-
+            # pre_filter = self._olla_service.search_terms_in_user_query(query)
+            vector_response = self._mongo_service.search_vector_without_pre_filter(embeddings)
+            for respuesta in vector_response:
+                name = respuesta.metadata.get("name")
+                logger.info(f"Respuesta del vector store: {name}")
+            return self._olla_service.summarize_result(vector_response, query)
 

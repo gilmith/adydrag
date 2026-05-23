@@ -1,27 +1,25 @@
-import connexion
+from connexion import FlaskApp
 from flask_injector import FlaskInjector
 
+from src.infrastructure.adapters.rest.teams_adapter import TeamsAdapter
 from src.infrastructure.di.DependencyModule import DependencyModule
 
 
 def create_app():
-    # Especificamos que queremos la UI de Swagger activa
-    options = {
-        "swagger_ui": True,
-        "swagger_path": "/ui"
-    }
-    connexion_app = connexion.FlaskApp(__name__, specification_dir='openapi/')
-    connexion_app.add_api(
-        'openapi.yaml',
-        options=options,
-        arguments={'title': 'D&D Bot API'}  # Puedes pasar variables al YAML
-    )
+
+    connexion_app = FlaskApp(__name__)
     flask_injector = FlaskInjector(
         app=connexion_app.app,
         modules=[DependencyModule()]
     )
-    # Guardamos el injector en extensions para poder acceder a él desde los adapters
     connexion_app.app.extensions['injector'] = flask_injector.injector
+    injector = flask_injector.injector
+    teams_adapter = injector.get(TeamsAdapter)
+    connexion_app.add_url_rule(
+        '/api/messages',
+        view_func=teams_adapter.process_message,
+        methods=['POST']
+    )
     return connexion_app
 
 

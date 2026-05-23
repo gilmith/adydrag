@@ -17,6 +17,10 @@ class OllamaService(ABC):
     @abstractmethod
     def get_embeddings_model(self):
         pass
+
+    @abstractmethod
+    def summarize_result(self, result : list[Document], input_query: str):
+        pass
     """
     # Ejemplo: Supongamos que 'docs' es tu lista de documentos de LangChain (del PDF)
 # docs = text_splitter.split_documents(pdf_pages)
