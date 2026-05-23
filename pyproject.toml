@@ -1,0 +1,44 @@
+[tool.poetry]
+name = "flaskrag"
+version = "0.1.0"
+description = ""
+authors = ["gilmith <gilmith@gmail.com>"]
+package-mode = false
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<4.0.0"
+flask = ">=3.0.0,<4.0.0"
+langchain = ">=1.2.18,<2.0.0"
+pypdf = ">=6.11.0,<7.0.0"
+pymupdf = ">=1.27.2.3,<2.0.0.0"
+langchain-text-splitters = ">=1.1.2,<2.0.0"
+langchain-community = ">=0.4.1,<0.5.0"
+langchain-core = ">=1.3.3,<2.0.0"
+langchain-openai = ">=1.2.1,<2.0.0"
+azure-search-documents = ">=12.0.0,<13.0.0"
+azure-core = ">=1.41.0,<2.0.0"
+python-dotenv = ">=1.2.2,<2.0.0"
+langchain-mongodb = ">=0.11.0,<0.12.0"
+pymongo = ">=4.17.0,<5.0.0"
+langchain-ollama = ">=1.1.0,<2.0.0"
+flask-cors = ">=6.0.2,<7.0.0"
+botbuilder-core = ">=4.17.1,<5.0.0"
+flask-injector = ">=0.15.0,<0.16.0"
+injector = ">=0.24.0,<0.25.0"
+loguru = ">=0.7.3,<0.8.0"
+
+[tool.poetry.group.dev.dependencies]
+poethepoet = ">=0.45.0,<0.46.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.poe.tasks]
+run  = "python main.py"
+test = "pytest src/tests"
+lint = "ruff check src"
+# Puedes crear un comando que limpie archivos temporales de python
+clean = "rm -rf **/__pycache__"
