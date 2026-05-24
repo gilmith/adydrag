@@ -17,7 +17,7 @@ class OllamaServiceImpl(OllamaService):
 
     def summarize_result(self, result: list[Document], input_query: str):
         prompt = ChatPromptTemplate.from_messages([
-            ("system", "Eres un dungeon master experimentado y tienes que responder las preguntas de un jugador respecto a los hechizos de mago y de sacerdote. Responde siempre en español."),
+            ("system", "Responde en español. Eres un dungeon master experimentado y tienes que responder las preguntas de un jugador respecto a los hechizos de mago y de sacerdote. Ciñete exclusivamente al contexto."),
             ("human", "Usando el siguiente contexto:\n\n{text}\n\nResponde a esta pregunta: {input_query}")
         ])
 
@@ -30,7 +30,7 @@ class OllamaServiceImpl(OllamaService):
 
         summarize_result = chain.invoke({"input_documents": result, "input_query": input_query})
         logger.info(summarize_result)
-        return summarize_result.get('output_text', '')
+        return summarize_result
 
 
     def get_embeddings_model(self):
@@ -60,7 +60,9 @@ class OllamaServiceImpl(OllamaService):
         )
         self._ollama_chat = ChatOllama(
                 model=settings.ollama_model_chat,
-                temperature=0.3
+                temperature=0.3,
+                top_p=0.3,
+                top_k=50,
         )
         self._llm = Ollama(model=settings.ollama_model_chat, temperature=0.3)
 

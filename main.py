@@ -1,7 +1,7 @@
 from connexion import FlaskApp
 from flask_injector import FlaskInjector
 
-from src.infrastructure.adapters.rest.teams_adapter import TeamsAdapter
+om src.infrastructure.adapters.rest.TeamsAdapter import TeamsAdapter
 from src.infrastructure.di.DependencyModule import DependencyModule
 
 

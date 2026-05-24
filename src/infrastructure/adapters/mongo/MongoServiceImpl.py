@@ -10,6 +10,26 @@ from loguru import logger
 
 class MongoServiceImpl(MongoService):
 
+    def similarity_search_by_vector_with_score(self, query_vector: list[float]):
+        return self._vector_store.similarity_search_with_relevance_scores(
+            embedding = query_vector,
+            k = 5)
+
+    def max_marginal_relevance_search_by_vector(self, query_vector: list[float]):
+        """
+        Este metodo es el que le pides 20 parecidos y te da el mas parecido de todos sin buscar el scorel, es decir
+        , el que tiene la mayor relevancia marginal. Es útil para evitar resultados redundantes.
+        con el multiplicador lambda_multi puedes ajustar el equilibrio entre relevancia y diversidad (0.5 es un buen punto de partida).
+        :param query_vector:
+        :return:
+        """
+        return self._vector_store.max_marginal_relevance_search_by_vector(
+            embedding = query_vector,
+            k = 1,
+            fetch_k = 20,
+            lambda_multi = 0.1)
+
+
     def __init__(self, settings: Settings, embeddings_model : Embeddings):
        self._vector_store = MongoDBAtlasVectorSearch.from_connection_string(
            connection_string=settings.mongo_uri,
@@ -46,5 +66,6 @@ class MongoServiceImpl(MongoService):
         return self._vector_store.similarity_search_by_vector(
                 embedding=query_vector,
                 k=5,
+                limit=1
             )
 
