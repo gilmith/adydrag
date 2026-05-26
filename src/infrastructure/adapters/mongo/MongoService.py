@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from langchain_core.documents import Document
+
 
 class MongoService(ABC):
 
@@ -17,4 +19,8 @@ class MongoService(ABC):
 
     @abstractmethod
     def similarity_search_by_vector_with_score(self, query_vector: list[float]):
+        pass
+
+    @abstractmethod
+    def as_retriever(self, query : str, k : int, threshold : float) -> list[Document]:
         pass

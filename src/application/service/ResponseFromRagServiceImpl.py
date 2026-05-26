@@ -1,12 +1,10 @@
 from typing import Optional
 
-from langchain_classic.retrievers import SelfQueryRetriever
-
 from src.domain.service.ResponseFromRagService import ResponseFromRagService
 from src.infrastructure.adapters.ollama.OllamaService import OllamaService
 from src.infrastructure.adapters.mongo.MongoService import MongoService
 from src.infrastructure.config.Settings import Settings
-from loguru import logger
+
 class ResponseFromRagServiceImpl(ResponseFromRagService):
 
     def __init__(self, olla_service: Optional[OllamaService], mongo_service: MongoService, settings: Settings):
@@ -15,6 +13,19 @@ class ResponseFromRagServiceImpl(ResponseFromRagService):
         self._settings = settings
 
     def execute_rag_service(self, query: str):
+        if self._olla_service:
+            vector_response = self._mongo_service.as_retriever(query, k=20, threshold=0.75)
+            if len(vector_response) == 0:
+                return {"output_text": "Lo siento, no pude encontrar información relevante para tu pregunta."}
+            else:
+                for response in vector_response:
+                    summarize =  self._olla_service.summarize_result(vector_response, query)
+                    return {
+                        "summary": summarize,
+                        "metadata": response.metadata
+                    }
+
+    def execute_rag_service_max(self, query: str):
         if self._olla_service:
             embeddings = self._olla_service.create_user_embeddings(query)
             vector_response = self._mongo_service.max_marginal_relevance_search_by_vector(embeddings)
@@ -25,4 +36,3 @@ class ResponseFromRagServiceImpl(ResponseFromRagService):
                     "summary": summarize,
                     "metadata": response.metadata
         }
-
