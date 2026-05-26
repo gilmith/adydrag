@@ -1,5 +1,6 @@
 from typing import cast, Collection, Any
 
+from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_mongodb import MongoDBAtlasVectorSearch
 from pymongo import MongoClient
@@ -10,6 +11,20 @@ from loguru import logger
 
 class MongoServiceImpl(MongoService):
 
+    """
+        este metodo no necesita pasar por un embedding inicial, ya lo tiene cargado. Le digo el numero de vecinos a
+        examinar y con eso y un umbral de confianza tendria que dar una lista de documentos encontrados y de ahi tendre
+        que pillar el de mas puntos
+    """
+    def as_retriever(self, query: str, k: int, threshold: float) -> list[Document]:
+        retriever = self._vector_store.as_retriever(
+            search_type="similarity_score_threshold",
+            search_kwargs={
+                "score_threshold": threshold,
+                "k": k
+            })
+        return retriever.invoke(query)
+
     def similarity_search_by_vector_with_score(self, query_vector: list[float]):
         return self._vector_store.similarity_search_with_relevance_scores(
             embedding = query_vector,
@@ -19,7 +34,9 @@ class MongoServiceImpl(MongoService):
         """
         Este metodo es el que le pides 20 parecidos y te da el mas parecido de todos sin buscar el scorel, es decir
         , el que tiene la mayor relevancia marginal. Es útil para evitar resultados redundantes.
-        con el multiplicador lambda_multi puedes ajustar el equilibrio entre relevancia y diversidad (0.5 es un buen punto de partida).
+        con el multiplicador lambda_multi puedes ajustar el equilibrio entre relevancia y diversidad.
+        No tiene un parametro de score para ver lo parecido que es el resultado y pasar el sumarize del llm.
+        Puedes poner el hola y responder algo que no tiene nada que ver
         :param query_vector:
         :return:
         """
