@@ -7,6 +7,19 @@ from src.infrastructure.config.Settings import Settings
 
 class ResponseFromRagServiceImpl(ResponseFromRagService):
 
+    def execute_rag_service_score(self, query: str):
+        if self._olla_service:
+            vector_response = self._mongo_service.as_retriever(query, k=20, threshold=0.75)
+            if len(vector_response) == 0:
+                return {"output_text": "Lo siento, no pude encontrar información relevante para tu pregunta."}
+            else:
+                for response in vector_response:
+                    summarize = self._olla_service.summarize_result(vector_response, query)
+                    return {
+                        "summary": summarize,
+                        "metadata": response.metadata
+                    }
+
     def __init__(self, olla_service: Optional[OllamaService], mongo_service: MongoService, settings: Settings):
         self._olla_service = olla_service
         self._mongo_service = mongo_service
@@ -14,7 +27,7 @@ class ResponseFromRagServiceImpl(ResponseFromRagService):
 
     def execute_rag_service(self, query: str):
         if self._olla_service:
-            vector_response = self._mongo_service.as_retriever(query, k=20, threshold=0.75)
+            vector_response = self._mongo_service.hybrid_search(query)
             if len(vector_response) == 0:
                 return {"output_text": "Lo siento, no pude encontrar información relevante para tu pregunta."}
             else:

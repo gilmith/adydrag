@@ -19,3 +19,4 @@ class Settings:
         self.chatbot_tenant_id = os.getenv("CHATBOT_TENANT_ID")
         self.ollama_model_chat = os.getenv("OLLAMA_MODEL_CHAT")
         self.mongo_vector_index = os.getenv("MONGO_VECTOR_INDEX")
+        self.mongo_full_index = os.getenv("MONGO_FULL_TEXT_INDEX")

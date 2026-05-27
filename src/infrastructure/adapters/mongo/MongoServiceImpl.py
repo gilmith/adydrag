@@ -3,6 +3,7 @@ from typing import cast, Collection, Any
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_mongodb import MongoDBAtlasVectorSearch
+from langchain_mongodb.retrievers import MongoDBAtlasHybridSearchRetriever
 from pymongo import MongoClient
 
 from src.infrastructure.adapters.mongo.MongoService import MongoService
@@ -24,6 +25,14 @@ class MongoServiceImpl(MongoService):
                 "k": k
             })
         return retriever.invoke(query)
+
+    """
+        Consulta por RRF entre vector y full search de lucene. Mismo peso para las dos busquedas. 
+        El resultado es una lista de documentos ordenados por relevancia, teniendo en cuenta tanto la similitud vectorial como la coincidencia de texto completo. 
+        Es útil para obtener resultados más relevantes al combinar ambas técnicas de búsqueda.
+    """
+    def hybrid_search(self, query: str):
+        return self._vector_hybrid.invoke(query)
 
     def similarity_search_by_vector_with_score(self, query_vector: list[float]):
         return self._vector_store.similarity_search_with_relevance_scores(
@@ -55,6 +64,10 @@ class MongoServiceImpl(MongoService):
            embedding=embeddings_model,
            text_key="page_content"
        )
+       self._vector_hybrid = MongoDBAtlasHybridSearchRetriever(
+          vectorstore=self._vector_store,
+          search_index_name=settings.mongo_full_index,
+          top_k=5)
 
     def search_vector(self, query_vector: list[float], pre_filter: list[str]):
         pass
