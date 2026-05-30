@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 from langchain_core.documents import Document
 from langchain_core.vectorstores import VectorStore
 
+from src.domain.model.MultipleDocument import MultipleDocument
+
 
 class OllamaService(ABC):
 
@@ -20,6 +22,10 @@ class OllamaService(ABC):
 
     @abstractmethod
     def summarize_result(self, result : list[Document], input_query: str):
+        pass
+
+    @abstractmethod
+    def generate_classification_prompt(self, results: list[MultipleDocument], input_query: str):
         pass
     """
     # Ejemplo: Supongamos que 'docs' es tu lista de documentos de LangChain (del PDF)
