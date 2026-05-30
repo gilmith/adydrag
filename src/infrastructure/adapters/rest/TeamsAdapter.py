@@ -54,15 +54,12 @@ class TeamsAdapter:
                     self._response_service.execute_rag_service,
                     user_text
                 )
-                logger.info(response.get('summary').get('output_text'))
-                output_text = response.get('summary').get('output_text')
-                metadata = response.get('metadata')
-                metadata_text = "\n".join([f"{k}: {v} \n" for k, v in metadata.items()])
+                # output_text = response.get('summary')
+                # metadata = response.get('metadata')
+                # metadata_text = "\n".join([f"{k}: {v} \n" for k, v in metadata.items()])
                 respuesta_final = (
-                    f"{output_text}\n\n"
-                    f"**Metadatos del fragmento:**\n"
-                    f"{metadata_text}"
-                )   
+                    f"{response}\n\n"
+                )
                 await turn_context.send_activity(respuesta_final)
 
         try:

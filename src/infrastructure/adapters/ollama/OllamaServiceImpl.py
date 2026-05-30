@@ -1,9 +1,10 @@
 from langchain_classic.chains.summarize import load_summarize_chain
 from langchain_community.llms.ollama import Ollama
 from langchain_core.documents import Document
-from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
+from src.domain.model.MultipleDocument import MultipleDocument
 from src.domain.model.HechizoMetadata import HechizoMetadata
 from src.infrastructure.adapters.ollama.OllamaService import OllamaService
 from src.infrastructure.config.Settings import Settings
@@ -12,25 +13,59 @@ from loguru import logger
 
 class OllamaServiceImpl(OllamaService):
 
+    def generate_classification_prompt(self, results: list[MultipleDocument], input_query: str):
+        # Ordenar por rank y formatear las opciones
+        sorted_results = sorted(results, key=lambda x: x.rank)
 
-    """reconocimiento de entidad nombradas"""
-
-    def summarize_result(self, result: list[Document], input_query: str):
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", "Responde en español. Eres un dungeon master experimentado y tienes que responder las preguntas de un jugador respecto a los hechizos de mago y de sacerdote. Ciñete exclusivamente al contexto."),
-            ("human", "Usando el siguiente contexto:\n\n{text}\n\nResponde a esta pregunta: {input_query}")
+        options_text = "\n".join([
+            f"{i + 1}. **{doc.name}** (rank: {doc.rank})\n "
+            for i, doc in enumerate(sorted_results)
         ])
 
-        chain = load_summarize_chain(
-            llm=self._ollama_chat,
-            chain_type="stuff",
-            prompt=prompt,
-            document_variable_name="text"
-        )
+        prompt = ChatPromptTemplate.from_messages([
+            ("system",
+             """Responde en español. Eres un dungeon master experimentado. 
+             El jugador ha realizado una búsqueda que ha devuelto varias coincidencias.
+             Preséntale las opciones de forma clara y amigable, numeradas, 
+             y pídele que especifique cuál le interesa."""),
+            ("human",
+             """El jugador preguntó: {input_query}
 
-        summarize_result = chain.invoke({"input_documents": result, "input_query": input_query})
-        logger.info(summarize_result)
-        return summarize_result
+             Se han encontrado las siguientes coincidencias ordenadas por relevancia:
+
+             {options_text}
+
+             Presenta estas opciones al jugador solo con el nombre que esta en el objeto options_test.name. """)
+        ])
+
+        chain = prompt | self._ollama_chat | StrOutputParser()
+
+        result = chain.invoke({
+            "input_query": input_query,
+            "options_text": options_text
+        })
+
+        logger.info(result)
+        return result
+
+    def summarize_result(self, result: list[Document], input_query: str):
+        context = "\n\n".join([doc.page_content for doc in result])
+
+        prompt = ChatPromptTemplate.from_messages([
+            ("system",
+             "Responde en español. Eres un dungeon master experimentado y tienes que responder las preguntas de un jugador respecto a los hechizos de mago y de sacerdote. Cíñete exclusivamente al contexto."),
+            ("human", "Usando el siguiente contexto:\n\n{context}\n\nResponde a esta pregunta: {input_query}")
+        ])
+
+        chain = prompt | self._ollama_chat | StrOutputParser()
+
+        result = chain.invoke({
+            "context": context,
+            "input_query": input_query
+        })
+
+        logger.info(result)
+        return result
 
 
     def get_embeddings_model(self):

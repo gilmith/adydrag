@@ -38,15 +38,13 @@ class ResponseFromRagServiceImpl(ResponseFromRagService):
                 for response in vector_response:
                     summarize =  self._olla_service.summarize_result(vector_response, query)
                     return {
-                        "summary": summarize,
-                        "metadata": response.metadata
+                        "summary": summarize
                     }
             else:
                 logger.debug(self._show_query_result(vector_response))
-                # la busqueda ha dado mas de un resultado relevante entonces tiene que cortar la conversacion diciendo al usuario
-                # a que se refiere porque tiene muchas opciones esto solo es util si son documentos sin relacion
-                multipleDocumentsData = self._generate_multiple_documents(vector_response)
-                return {"multiple_documents": multipleDocumentsData}
+                multiple_documents_data = self._generate_multiple_documents(vector_response)
+                summarize = self._olla_service.generate_classification_prompt(multiple_documents_data, query)
+                return {"summary": summarize}
 
     def execute_rag_service_max(self, query: str):
         if self._olla_service:
@@ -77,7 +75,7 @@ class ResponseFromRagServiceImpl(ResponseFromRagService):
                 level=response.metadata.get("level", 0),
                 rank=response.metadata.get("rank", 0),
                 name=response.metadata.get("name", "Sin nombre"),
-                full_text_score=response.metadata.get("full_text_score", 0.0),
+                full_text_score=response.metadata.get("fulltext_score", 0.0),
                 vector_score=response.metadata.get("vector_score", 0.0)
             )
             for response in vector_response

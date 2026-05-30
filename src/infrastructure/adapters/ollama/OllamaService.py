@@ -25,7 +25,7 @@ class OllamaService(ABC):
         pass
 
     @abstractmethod
-    def sumarize_multiple_results(self, results: list[MultipleDocument], input_query: str):
+    def generate_classification_prompt(self, results: list[MultipleDocument], input_query: str):
         pass
     """
     # Ejemplo: Supongamos que 'docs' es tu lista de documentos de LangChain (del PDF)
