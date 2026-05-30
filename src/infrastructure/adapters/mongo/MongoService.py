@@ -24,3 +24,7 @@ class MongoService(ABC):
     @abstractmethod
     def as_retriever(self, query : str, k : int, threshold : float) -> list[Document]:
         pass
+
+    @abstractmethod
+    def hybrid_search(self, query: str):
+        pass
