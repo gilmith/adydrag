@@ -1,6 +1,8 @@
 from injector import Module, singleton, provider
 from langchain_core.embeddings import Embeddings
 
+from src.infrastructure.adapters.session.ChatHistoryRepositoryPortImpl import ChatHistoryRepositoryPortImpl
+from src.application.service.session.ChatHistoryRepositoryService import ChatHistoryRepositoryService
 from src.domain.service.ResponseFromRagService import ResponseFromRagService
 from src.application.service.ResponseFromRagServiceImpl import ResponseFromRagServiceImpl
 from src.infrastructure.adapters.ollama.OllamaService import OllamaService
@@ -35,7 +37,13 @@ class DependencyModule(Module):
 
     @singleton
     @provider
-    def provide_response(self, ollama_service: OllamaService, mongo_service: MongoService, settings: Settings) -> ResponseFromRagService:
+    def provide_chat_history(self) -> ChatHistoryRepositoryService:
+        return ChatHistoryRepositoryPortImpl()
+
+    @singleton
+    @provider
+    def provide_response(self, ollama_service: OllamaService, mongo_service: MongoService, settings: Settings,
+                         chat_history : ChatHistoryRepositoryService) -> ResponseFromRagService:
         if ollama_service:
-            return ResponseFromRagServiceImpl(ollama_service, mongo_service, settings)
+            return ResponseFromRagServiceImpl(ollama_service, mongo_service, settings, chat_history)
         return None

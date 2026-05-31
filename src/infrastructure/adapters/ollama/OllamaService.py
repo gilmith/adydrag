@@ -27,6 +27,7 @@ class OllamaService(ABC):
     @abstractmethod
     def generate_classification_prompt(self, results: list[MultipleDocument], input_query: str):
         pass
+
     """
     # Ejemplo: Supongamos que 'docs' es tu lista de documentos de LangChain (del PDF)
 # docs = text_splitter.split_documents(pdf_pages)

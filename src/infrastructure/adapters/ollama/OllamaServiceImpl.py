@@ -48,6 +48,7 @@ class OllamaServiceImpl(OllamaService):
         logger.info(result)
         return result
 
+    #TODO cambiar para que añada los metadatos que ahora solo esta dando el resumen 
     def summarize_result(self, result: list[Document], input_query: str):
         context = "\n\n".join([doc.page_content for doc in result])
 
