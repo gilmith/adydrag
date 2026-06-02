@@ -43,24 +43,23 @@ class TeamsAdapter:
         async def logic(turn_context: TurnContext):
             if turn_context.activity.type == "message":
                 user_text = turn_context.activity.text
-                print(f"El usuario dice: {user_text}")
-
                 #  SOLUCIÓN AL BLOQUEO DE OLLAMA/RAG:
                 # Corremos la función síncrona en un hilo separado para que asyncio pueda
                 # enviar el evento "typing" en paralelo mientras Ollama procesa.
                 loop = asyncio.get_running_loop()
+
                 response = await loop.run_in_executor(
                     None,
                     self._response_service.execute_rag_service,
-                    user_text
+                    user_text, turn_context.activity.conversation.id
                 )
                 # output_text = response.get('summary')
                 # metadata = response.get('metadata')
                 # metadata_text = "\n".join([f"{k}: {v} \n" for k, v in metadata.items()])
-                respuesta_final = (
+                user_response_from_llm = (
                     f"{response}\n\n"
                 )
-                await turn_context.send_activity(respuesta_final)
+                await turn_context.send_activity(user_response_from_llm)
 
         try:
             loop = asyncio.new_event_loop()

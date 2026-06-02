@@ -13,5 +13,9 @@ class ResponseFromRagService(ABC):
         pass
 
     @abstractmethod
-    def execute_rag_service(self, query: str):
+    def execute_rag_service(self, query: str, conversation_id: str):
+        pass
+
+    @abstractmethod
+    def save_conversation(self, id: str, user_text:str):
         pass
