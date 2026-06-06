@@ -5,6 +5,7 @@ from injector import inject
 from langchain_core.documents import Document
 from langchain_core.messages import AIMessage
 
+from src.application.service.IAService import IAService
 from src.application.service.session.ChatHistoryRepositoryService import ChatHistoryRepositoryService
 from src.domain.model.MultipleDocument import MultipleDocument
 from src.domain.service.ResponseFromRagService import ResponseFromRagService
@@ -16,11 +17,12 @@ class ResponseFromRagServiceImpl(ResponseFromRagService):
 
     @inject
     def __init__(self, olla_service: Optional[OllamaService], mongo_service: MongoService, settings: Settings,
-                 chat_history_repository: ChatHistoryRepositoryService):
+                 chat_history_repository: ChatHistoryRepositoryService, ia_service: IAService):
         self._olla_service = olla_service
         self._mongo_service = mongo_service
         self._settings = settings
         self._chat_history_repository = chat_history_repository
+        self._ia_service = ia_service
 
 
     """
@@ -50,7 +52,7 @@ class ResponseFromRagServiceImpl(ResponseFromRagService):
 
 
     def execute_rag_service(self, query: str, conversation_id: str):
-        if self._chat_history_repository.get_history(conversation_id) is not None:
+        if len(self._chat_history_repository.get_history(conversation_id)) > 0:
             full_history = self._chat_history_repository.get_history(conversation_id)
             logger.info("iterando sobre la conversacion anterior para buscar el termino que ha elegido el usuario, si no tiene suficiente similitud, busca en base de datos")
             #ejecuta el comparador semantico sobre el campo name de la conversacion anterior, si encuentra una similitud mayor al 0.75, devuelve el resultado de esa conversacion, sino ejecuta la consulta a mongo
@@ -68,7 +70,7 @@ class ResponseFromRagServiceImpl(ResponseFromRagService):
             elif len(vector_response) == 1:
                 logger.debug(self._show_query_result(vector_response))
                 for response in vector_response:
-                    summarize =  self._olla_service.summarize_result(vector_response, query)
+                    summarize =  self._ia_service.summarize_result(conversation_id, vector_response, query)
                     return {
                         "summary": summarize
                     }
@@ -76,7 +78,7 @@ class ResponseFromRagServiceImpl(ResponseFromRagService):
                 logger.debug(self._show_query_result(vector_response))
                 multiple_documents_data = self._generate_multiple_documents(vector_response)
                 self._chat_history_repository.add_ai_message(conversation_id, vector_response)
-                summarize = self._olla_service.generate_classification_prompt(multiple_documents_data, query)
+                summarize = self._ia_service.generate_classification_prompt(conversation_id, multiple_documents_data, query)
                 return {"summary": summarize}
 
     def execute_rag_service_max(self, query: str):
