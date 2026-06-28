@@ -20,6 +20,7 @@ def create_app():
         view_func=teams_adapter.process_message,
         methods=['POST']
     )
+    connexion_app.app.name = "adyd_rag"
     return connexion_app
 
 

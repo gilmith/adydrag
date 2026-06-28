@@ -1,7 +1,9 @@
 from injector import Module, singleton, provider
 from langchain_core.embeddings import Embeddings
 
-from src.infrastructure.adapters.session.ChatHistoryRepositoryPortImpl import ChatHistoryRepositoryPortImpl
+from src.application.service.IAService import IAService
+from src.infrastructure.adapters.azure.IAServiceImpl import IAServiceImpl
+from src.infrastructure.adapters.session.ChatHistoryMongoRepositoryServiceImpl import ChatHistoryMongoRepositoryServiceImpl
 from src.application.service.session.ChatHistoryRepositoryService import ChatHistoryRepositoryService
 from src.domain.service.ResponseFromRagService import ResponseFromRagService
 from src.application.service.ResponseFromRagServiceImpl import ResponseFromRagServiceImpl
@@ -37,13 +39,19 @@ class DependencyModule(Module):
 
     @singleton
     @provider
-    def provide_chat_history(self) -> ChatHistoryRepositoryService:
-        return ChatHistoryRepositoryPortImpl()
+    def provide_azure(self, settings: Settings) -> IAService:
+        return IAServiceImpl(settings)
+
+    @singleton
+    @provider
+    def provide_chat_history(self, settings: Settings) -> ChatHistoryRepositoryService:
+        return ChatHistoryMongoRepositoryServiceImpl(settings)
+
 
     @singleton
     @provider
     def provide_response(self, ollama_service: OllamaService, mongo_service: MongoService, settings: Settings,
-                         chat_history : ChatHistoryRepositoryService) -> ResponseFromRagService:
+                         chat_history : ChatHistoryRepositoryService, azure_service: IAService) -> ResponseFromRagService:
         if ollama_service:
-            return ResponseFromRagServiceImpl(ollama_service, mongo_service, settings, chat_history)
+            return ResponseFromRagServiceImpl(ollama_service, mongo_service, settings, chat_history, azure_service)
         return None

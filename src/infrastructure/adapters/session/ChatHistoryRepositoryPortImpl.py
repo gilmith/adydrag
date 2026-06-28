@@ -3,7 +3,7 @@ from typing import Any
 from langchain_core.documents import Document
 from langchain_core.messages import HumanMessage, AIMessage
 
-from src.application.service.session.ChatHistoryRepositoryService import ChatHistoryRepositoryService
+from application.service.session.ChatHistoryRepositoryService import ChatHistoryRepositoryService
 from langchain_core.chat_history import InMemoryChatMessageHistory
 
 class ChatHistoryRepositoryPortImpl(ChatHistoryRepositoryService):
