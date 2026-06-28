@@ -1,5 +1,5 @@
-from connexion import FlaskApp
-from flask_injector import FlaskInjector
+from flask import Flask, request, jsonify
+from injector import Injector
 
 from src.infrastructure.adapters.rest.TeamsAdapter import TeamsAdapter
 from src.infrastructure.di.DependencyModule import DependencyModule
@@ -7,21 +7,18 @@ from src.infrastructure.di.DependencyModule import DependencyModule
 
 def create_app():
 
-    connexion_app = FlaskApp(__name__)
-    flask_injector = FlaskInjector(
-        app=connexion_app.app,
-        modules=[DependencyModule()]
-    )
-    connexion_app.app.extensions['injector'] = flask_injector.injector
-    injector = flask_injector.injector
+    flask_app = Flask(__name__)
+    
+    # Initialize the injector and configure it with the dependency module
+    injector = Injector(modules=[DependencyModule()])
     teams_adapter = injector.get(TeamsAdapter)
-    connexion_app.add_url_rule(
-        '/api/messages',
-        view_func=teams_adapter.process_message,
-        methods=['POST']
-    )
-    connexion_app.app.name = "adyd_rag"
-    return connexion_app
+    
+    @flask_app.route('/api/messages', methods=['POST'])
+    def process_message():
+        return jsonify(teams_adapter.process_message())
+    
+    flask_app.name = "adyd_rag"
+    return flask_app
 
 
 if __name__ == "__main__":
