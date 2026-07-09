@@ -4,11 +4,10 @@ from botbuilder.core import ShowTypingMiddleware
 
 import asyncio
 from injector import inject
-from loguru import logger
 
 from src.infrastructure.config.Settings import Settings
 from src.infrastructure.adapters.mongo.MongoService import MongoService
-from src.infrastructure.adapters.ollama.OllamaService import OllamaService
+from domain.service.llm.LLMService import OllamaService
 from src.domain.service.ResponseFromRagService import ResponseFromRagService
 from flask import request as flask_request
 

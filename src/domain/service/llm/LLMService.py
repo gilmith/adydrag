@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 
 from langchain_core.documents import Document
-from langchain_core.vectorstores import VectorStore
 
 from src.domain.model.MultipleDocument import MultipleDocument
 
 
-class OllamaService(ABC):
+class LLMService(ABC):
+
 
     @abstractmethod
     def create_user_embeddings(self, query: str) -> list[float]:

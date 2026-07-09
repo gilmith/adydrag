@@ -9,7 +9,7 @@ from src.application.service.IAService import IAService
 from src.application.service.session.ChatHistoryRepositoryService import ChatHistoryRepositoryService
 from src.domain.model.MultipleDocument import MultipleDocument
 from src.domain.service.ResponseFromRagService import ResponseFromRagService
-from src.infrastructure.adapters.ollama.OllamaService import OllamaService
+from domain.service.llm.LLMService import OllamaService
 from src.infrastructure.adapters.mongo.MongoService import MongoService
 from src.infrastructure.config.Settings import Settings
 from loguru import logger

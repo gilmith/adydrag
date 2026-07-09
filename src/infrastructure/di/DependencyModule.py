@@ -7,7 +7,7 @@ from src.infrastructure.adapters.session.ChatHistoryMongoRepositoryServiceImpl i
 from src.application.service.session.ChatHistoryRepositoryService import ChatHistoryRepositoryService
 from src.domain.service.ResponseFromRagService import ResponseFromRagService
 from src.application.service.ResponseFromRagServiceImpl import ResponseFromRagServiceImpl
-from src.infrastructure.adapters.ollama.OllamaService import OllamaService
+from domain.service.llm.LLMService import OllamaService, LLMService
 from src.infrastructure.adapters.mongo.MongoService import MongoService
 from src.infrastructure.adapters.mongo.MongoServiceImpl import MongoServiceImpl
 from src.infrastructure.adapters.ollama.OllamaServiceImpl import OllamaServiceImpl
@@ -55,3 +55,8 @@ class DependencyModule(Module):
         if ollama_service:
             return ResponseFromRagServiceImpl(ollama_service, mongo_service, settings, chat_history, azure_service)
         return None
+
+    @singleton
+    @provider
+    def provide_llama_cpp(self, ollama_service: OllamaService) -> LLMService:
+        return ollama_service
