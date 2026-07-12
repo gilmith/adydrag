@@ -6,6 +6,7 @@ load_dotenv()
 
 class Settings:
     def __init__(self):
+        self.llama_cpp_url = os.getenv("LLAMA_URL")
         self.mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
         self.ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
         self.azure_app_id = os.getenv("AZURE_APP_ID")

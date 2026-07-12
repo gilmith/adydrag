@@ -1,7 +1,8 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify
 from injector import Injector
 
 from src.infrastructure.adapters.rest.TeamsAdapter import TeamsAdapter
+from src.infrastructure.di.NodesModule import NodesModule
 from src.infrastructure.di.DependencyModule import DependencyModule
 
 
@@ -10,7 +11,7 @@ def create_app():
     flask_app = Flask(__name__)
     
     # Initialize the injector and configure it with the dependency module
-    injector = Injector(modules=[DependencyModule()])
+    injector = Injector(modules=[NodesModule(), DependencyModule()])
     teams_adapter = injector.get(TeamsAdapter)
     
     @flask_app.route('/api/messages', methods=['POST'])
@@ -24,4 +25,4 @@ def create_app():
 if __name__ == "__main__":
     app = create_app()
     # Host 0.0.0.0 es necesario si usas Docker o quieres que sea accesible en tu red
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5003)

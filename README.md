@@ -230,3 +230,22 @@ pipeline = [
 ]
 
 x = collection.aggregate(pipeline)
+
+
+
+from sentence_transformers import CrossEncoder
+
+# 1. Cargamos el modelo experto en evaluar "parecidos reales"
+# (Lo ideal es tenerlo instanciado como una propiedad de tu servicio)
+reranker = CrossEncoder("BAAI/bge-reranker-large")
+
+# 2. Preparamos los pares (Query, Texto del documento de Mongo)
+pares = [[state.user_query, doc["page_content"]] for doc in documentos_mongo]
+
+# 3. Calculamos las puntuaciones reales
+# Devuelve un array de floats entre 0 y 1 para cada documento
+scores_reales = reranker.predict(pares)
+
+# 4. Ahora sí tienes el parecido real absoluto
+for i, doc in enumerate(documentos_mongo):
+    print(f"Documento {i} - Parecido Semántico Real: {scores_reales[i]}")
