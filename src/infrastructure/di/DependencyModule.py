@@ -3,7 +3,10 @@ from langchain_core.embeddings import Embeddings
 from loguru import logger
 from pymongo import MongoClient
 
-from application.service.node import SummarizeNode
+from application.service.node import GlobalErrorNode
+from src.application.service.graph.GraphServiceImpl import GraphServiceImpl
+from src.infrastructure.di.NodesModule import RetrieverNodeKey, SummarizeNodeKey, ContextNodeKey, GlobalErrorNodeKey
+from src.application.service.graph.GraphService import GraphService
 from src.application.service.IAService import IAService
 from src.application.service.ResponseFromRagServiceImpl import ResponseFromRagServiceImpl
 from src.application.service.node.ContextNode import ContextNode
@@ -19,7 +22,6 @@ from src.infrastructure.adapters.ollama.OllamaService import OllamaService
 from src.infrastructure.adapters.session.ChatHistoryMongoRepositoryServiceImpl import \
     ChatHistoryMongoRepositoryServiceImpl
 from src.infrastructure.config.Settings import Settings
-from src.infrastructure.di.NodesModule import RetrieverNodeKey, ContextNodeKey, SummarizeNodeKey
 
 
 class DependencyModule(Module):
@@ -63,11 +65,9 @@ class DependencyModule(Module):
                          mongo_service: MongoService, settings: Settings,
                          chat_history : ChatHistoryRepositoryService,
                          azure_service: IAService,
-                         retriever_node: RetrieverNodeKey,
-                         context_node: ContextNodeKey,
-                         summarize_node: SummarizeNodeKey) -> ResponseFromRagService:
+                         graph_service: GraphService) -> ResponseFromRagService:
         if ollama_service:
-            return ResponseFromRagServiceImpl(ollama_service, mongo_service, settings, chat_history, azure_service, retriever_node, context_node, summarize_node)
+            return ResponseFromRagServiceImpl(ollama_service, mongo_service, settings, chat_history, azure_service, graph_service)
         return None
 
 
@@ -95,3 +95,10 @@ class DependencyModule(Module):
     def provide_retriever_node(self, mongo_service: MongoService) -> Node:
         return RetrieverNode(mongo_service)
 
+    @singleton
+    @provider
+    def provide_graph(self, retriever_node: RetrieverNodeKey,
+                      summarize_node: SummarizeNodeKey, context_node: ContextNodeKey,
+                      mongo_client: MongoClient,
+                      global_error_node: GlobalErrorNodeKey) -> GraphService:
+        return GraphServiceImpl(retriever_node, context_node, summarize_node, mongo_client, global_error_node)

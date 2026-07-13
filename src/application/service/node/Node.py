@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
-
+from langgraph.types import Command
 from pydantic import BaseModel
 
 from src.application.service.exception.NodeException import NodeException
@@ -12,7 +12,7 @@ class Node(ABC):
     def __init__(self):
         self.name = self.__class__.__name__
 
-    def template_method(self, state: State) -> State:
+    def template_method(self, state: State) -> State | Command:
         log_entry = LogMeta(
             node_name=self.name,
             info=f"{self.name}: Iniciando ejecución",
@@ -30,7 +30,14 @@ class Node(ABC):
             log_entry.level = e.log_level
             log_entry.info += e.message
             state.logs.append(log_entry)
-            raise e
+            return Command(
+                update={
+                    "logs": state.logs,
+                    "error_message": e.message,
+                    "error_occurred": True
+                },
+                goto="error_cleanup_node"  # Nombre de tu nodo global de tratamiento de errores
+            )
 
     @abstractmethod
     def execute(self, state: State) -> State:

@@ -10,6 +10,7 @@ from langgraph.checkpoint.mongodb import MongoDBSaver
 from langgraph.constants import START, END
 from langgraph.graph import StateGraph
 
+from application.service.graph.GraphService import GraphService
 from src.application.service.node.Node import Node
 from src.application.service.IAService import IAService
 from src.application.service.session.ChatHistoryRepositoryService import ChatHistoryRepositoryService
@@ -26,15 +27,13 @@ class ResponseFromRagServiceImpl(ResponseFromRagService):
     @inject
     def __init__(self, olla_service: Optional[OllamaService], mongo_service: MongoService, settings: Settings,
                  chat_history_repository: ChatHistoryRepositoryService, ia_service: IAService,
-                 retriever_node: Node, context_node: Node, summarize_node: Node):
-        self._summanrize_node = summarize_node
+                 graph_service: GraphService):
         self._olla_service = olla_service
         self._mongo_service = mongo_service
         self._settings = settings
         self._chat_history_repository = chat_history_repository
         self._ia_service = ia_service
-        self._retriever_node = retriever_node
-        self._context_node = context_node
+        self._graph_service = graph_service
 
 
     """
@@ -64,20 +63,7 @@ class ResponseFromRagServiceImpl(ResponseFromRagService):
 
 
     def execute_rag_service(self, query: str, conversation_id: str):
-        with MongoDBSaver.from_conn_string("mongodb://rag_user:pass4rag@localhost:27017/?directConnection=true",) as checkpointer:
-            graph = StateGraph(State)
-            graph.add_node("retriever", self._retriever_node.as_graph_node)
-            graph.add_node("context_history",self._context_node.as_graph_node)
-            graph.add_node("summarize", self._summanrize_node.as_graph_node)
-            graph.add_edge(START, "context_history")
-            graph.add_edge("context_history", "retriever")
-            graph.add_edge("retriever", "summarize")
-            graph.add_edge("summarize", END)
-            #buscar como meter un store para tener la conversacion en memoria
-            app = graph.compile(checkpointer=checkpointer)
-            config = RunnableConfig(configurable={"thread_id": uuid.uuid4()})
-            result = app.invoke({"user_query": query, "conversation_id" : conversation_id}, config= config, stream_mode="debug")
-        return result
+        return self._graph_service.invoke_graph(query, conversation_id)
         """
         if len(self._chat_history_repository.get_history(conversation_id)) > 0:
             full_history = self._chat_history_repository.get_history(conversation_id)

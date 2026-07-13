@@ -1,14 +1,14 @@
 from injector import inject
 
-from src.application.service.IAService import IAService
 from src.application.service.node.Node import Node
-from src.domain.model.state.StateData import State, StateData
+from src.domain.model.state.StateData import State
+from src.infrastructure.adapters.ollama.OllamaService import OllamaService
 
 
 class SummarizeNode(Node):
 
     @inject
-    def __init__(self, llm_service: IAService):
+    def __init__(self, llm_service: OllamaService):
         super().__init__()
         self.name = self.__class__.__name__
         self._llm_service = llm_service

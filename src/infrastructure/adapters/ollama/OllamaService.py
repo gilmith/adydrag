@@ -21,7 +21,7 @@ class OllamaService(ABC):
         pass
 
     @abstractmethod
-    def summarize_result(self, result : list[Document], input_query: str):
+    def summarize_result(self, conversation_id: str, result : list[Document], input_query: str):
         pass
 
     @abstractmethod
