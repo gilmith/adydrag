@@ -1,17 +1,21 @@
-from langchain_classic.chains.summarize import load_summarize_chain
 from langchain_community.llms.ollama import Ollama
 from langchain_core.documents import Document
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-
-from src.domain.model.MultipleDocument import MultipleDocument
-from src.domain.model.HechizoMetadata import HechizoMetadata
-from src.infrastructure.adapters.ollama.OllamaService import OllamaService
-from src.infrastructure.config.Settings import Settings
 from langchain_ollama import OllamaEmbeddings, ChatOllama
 from loguru import logger
 
+from src.domain.model.ClarificationOrMoreInfo import ClarificationOrMoreInfo
+from src.domain.model.HechizoMetadata import HechizoMetadata
+from src.domain.model.MultipleDocument import MultipleDocument
+from src.infrastructure.adapters.ollama.OllamaService import OllamaService
+from src.infrastructure.config.Settings import Settings
+
+
 class OllamaServiceImpl(OllamaService):
+
+    def is_clarification_more_info(self, user_query: str) -> ClarificationOrMoreInfo:
+        pass
 
     def generate_classification_prompt(self, results: list[MultipleDocument], input_query: str):
         # Ordenar por rank y formatear las opciones

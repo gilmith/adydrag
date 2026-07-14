@@ -1,17 +1,11 @@
-import uuid
 from typing import Optional
 
 import numpy as np
 from injector import inject
 from langchain_core.documents import Document
 from langchain_core.messages import AIMessage
-from langchain_core.runnables import Runnable, RunnableConfig
-from langgraph.checkpoint.mongodb import MongoDBSaver
-from langgraph.constants import START, END
-from langgraph.graph import StateGraph
 
 from application.service.graph.GraphService import GraphService
-from src.application.service.node.Node import Node
 from src.application.service.IAService import IAService
 from src.application.service.session.ChatHistoryRepositoryService import ChatHistoryRepositoryService
 from src.domain.model.MultipleDocument import MultipleDocument
@@ -19,7 +13,6 @@ from src.domain.service.ResponseFromRagService import ResponseFromRagService
 from src.infrastructure.adapters.ollama.OllamaService import OllamaService
 from src.infrastructure.adapters.mongo.MongoService import MongoService
 from src.infrastructure.config.Settings import Settings
-from src.domain.model.state.StateData import State
 
 from loguru import logger
 class ResponseFromRagServiceImpl(ResponseFromRagService):

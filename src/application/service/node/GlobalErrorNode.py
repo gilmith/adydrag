@@ -1,26 +1,23 @@
-from langchain_protocol import Command
-from langgraph.errors import NodeError
+from langgraph.types import Command
+from langgraph.graph import END
+from loguru import logger
 
-from application.service.node.Node import Node
-from domain.model.state.StateData import State
+from application.service.node.process.Node import Node
+from src.domain.model.state.StateData import State
 
 
 class GlobalErrorNode(Node):
-    """
-        Nodo de escape. Se ejecuta únicamente si algo falla.
-        Su único propósito es formatear una respuesta de error controlada para el usuario.
-        """
+    def __init__(self):
+        super().__init__()
 
-    def execute(self, state: State) -> State:
-        # 1. Recuperamos el mensaje de error o usamos uno por defecto si no existe
-
-        # 2. Definimos una respuesta amigable para el usuario de Teams
-        state.llm_response = (
-            "Lo siento, he tenido un problema al consultar los manuales de transporte. "
-            "Por favor, inténtalo de nuevo en unos momentos."
+    def execute(self, state: State) -> Command:
+        return Command(
+            update={
+                "llm_response": (
+                    """Lo siento, he tenido un problema al consultar los grimorios y los papiros.
+                        Reformula tu pregunta.
+                    """
+                )
+            },
+            goto=END  # Forzamos la finalización del grafo aquí
         )
-
-        # 3. Opcional: Si quieres registrar más contexto en tus logs internos
-        # state.logs.append(...) ya se gestiona en el template_method de la clase base
-
-        return state

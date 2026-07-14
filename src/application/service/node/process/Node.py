@@ -36,11 +36,10 @@ class Node(ABC):
                     "error_message": e.message,
                     "error_occurred": True
                 },
-                goto="error_cleanup_node"  # Nombre de tu nodo global de tratamiento de errores
-            )
+                goto="error_cleanup_node"              )
 
     @abstractmethod
-    def execute(self, state: State) -> State:
+    def execute(self, state: State) -> State | Command:
         """
             Metodo absolutamente abstrcto al final es un patron comando en bonito
         """

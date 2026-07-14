@@ -3,7 +3,7 @@ from langchain_core.documents import Document
 
 from src.application.service.exception.NodeException import NodeException
 from src.domain.model.state.StateData import LogLevel, Metadata
-from src.application.service.node.Node import Node
+from application.service.node.process.Node import Node
 from src.domain.model.state.StateData import State, StateData
 from src.infrastructure.adapters.mongo.MongoService import MongoService
 

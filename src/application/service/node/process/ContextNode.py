@@ -1,8 +1,7 @@
 from injector import inject
-from loguru import logger
 from pymongo import MongoClient
 
-from src.application.service.node.Node import Node
+from application.service.node.process.Node import Node
 from src.domain.model.state.StateData import State
 
 

@@ -3,15 +3,13 @@ from langchain_core.embeddings import Embeddings
 from loguru import logger
 from pymongo import MongoClient
 
-from application.service.node import GlobalErrorNode
-from src.application.service.graph.GraphServiceImpl import GraphServiceImpl
-from src.infrastructure.di.NodesModule import RetrieverNodeKey, SummarizeNodeKey, ContextNodeKey, GlobalErrorNodeKey
-from src.application.service.graph.GraphService import GraphService
+from src.application.service.node.process.ContextNode import ContextNode
+from src.application.service.node.process.Node import Node
+from src.application.service.node.process.RetrieverNode import RetrieverNode
 from src.application.service.IAService import IAService
 from src.application.service.ResponseFromRagServiceImpl import ResponseFromRagServiceImpl
-from src.application.service.node.ContextNode import ContextNode
-from src.application.service.node.Node import Node
-from src.application.service.node.RetrieverNode import RetrieverNode
+from src.application.service.graph.GraphService import GraphService
+from src.application.service.graph.GraphServiceImpl import GraphServiceImpl
 from src.application.service.session.ChatHistoryRepositoryService import ChatHistoryRepositoryService
 from src.domain.service.ResponseFromRagService import ResponseFromRagService
 from src.infrastructure.adapters.azure.IAServiceImpl import IAServiceImpl
@@ -22,6 +20,8 @@ from src.infrastructure.adapters.ollama.OllamaService import OllamaService
 from src.infrastructure.adapters.session.ChatHistoryMongoRepositoryServiceImpl import \
     ChatHistoryMongoRepositoryServiceImpl
 from src.infrastructure.config.Settings import Settings
+from src.infrastructure.di.NodesModule import RetrieverNodeKey, SummarizeNodeKey, ContextNodeKey, GlobalErrorNodeKey, \
+    ClarificationOrMoreInfoKey
 
 
 class DependencyModule(Module):
@@ -97,8 +97,11 @@ class DependencyModule(Module):
 
     @singleton
     @provider
-    def provide_graph(self, retriever_node: RetrieverNodeKey,
-                      summarize_node: SummarizeNodeKey, context_node: ContextNodeKey,
+    def provide_graph(self,
+                      retriever_node: RetrieverNodeKey,
+                      summarize_node: SummarizeNodeKey,
+                      context_node: ContextNodeKey,
                       mongo_client: MongoClient,
-                      global_error_node: GlobalErrorNodeKey) -> GraphService:
-        return GraphServiceImpl(retriever_node, context_node, summarize_node, mongo_client, global_error_node)
+                      global_error_node: GlobalErrorNodeKey,
+                      clarification_more_info: ClarificationOrMoreInfoKey) -> GraphService:
+        return GraphServiceImpl(retriever_node, context_node, summarize_node, mongo_client, global_error_node,clarification_more_info)

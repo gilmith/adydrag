@@ -1,6 +1,6 @@
 from injector import inject
 
-from src.application.service.node.Node import Node
+from application.service.node.process.Node import Node
 from src.domain.model.state.StateData import State
 from src.infrastructure.adapters.ollama.OllamaService import OllamaService
 
