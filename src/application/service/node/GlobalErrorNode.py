@@ -1,12 +1,14 @@
-from langgraph.types import Command
+from injector import inject
 from langgraph.graph import END
-from loguru import logger
+from langgraph.types import Command
 
-from application.service.node.process.Node import Node
+from src.application.service.node.process.Node import Node
 from src.domain.model.state.StateData import State
 
 
 class GlobalErrorNode(Node):
+
+    @inject
     def __init__(self):
         super().__init__()
 

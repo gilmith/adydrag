@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
+from typing import Optional, Union
+
+from langgraph.store.base import BaseStore
 from langgraph.types import Command
-from pydantic import BaseModel
 
 from src.application.service.exception.NodeException import NodeException
 from src.domain.model.state.StateData import LogMeta, LogLevel, State
@@ -12,7 +14,7 @@ class Node(ABC):
     def __init__(self):
         self.name = self.__class__.__name__
 
-    def template_method(self, state: State) -> State | Command:
+    def template_method(self, state: State, store: Optional[BaseStore] = None) -> Union[State, Command]:
         log_entry = LogMeta(
             node_name=self.name,
             info=f"{self.name}: Iniciando ejecución",
@@ -20,7 +22,7 @@ class Node(ABC):
             start_time=datetime.now()
         )
         try:
-            result = self.execute(state)
+            result = self.execute(state, store)
             log_entry.info += ": Finalizado"
             log_entry.end_time = datetime.now()
             state.logs.append(log_entry)
@@ -36,16 +38,15 @@ class Node(ABC):
                     "error_message": e.message,
                     "error_occurred": True
                 },
-                goto="error_cleanup_node"              )
+                goto="error_cleanup_node")
 
     @abstractmethod
-    def execute(self, state: State) -> State | Command:
+    def execute(self, state: State, store: Optional[BaseStore] = None) -> Union[State, Command]:
         """
             Metodo absolutamente abstrcto al final es un patron comando en bonito
         """
         pass
 
-    def as_graph_node(self, state: BaseModel) -> BaseModel:
+    def as_graph_node(self, state: State, store: Optional[BaseStore] = None) -> Union[State, Command]:
         """Método adaptador para LangGraph."""
-        # Aquí puedes llamar a tu método run() u orquestador interno
-        return self.template_method(state)
+        return self.template_method(state, store)

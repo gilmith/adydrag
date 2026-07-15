@@ -1,8 +1,10 @@
 from injector import Module, singleton, provider
 from langchain_core.embeddings import Embeddings
+from langgraph.store.mongodb import MongoDBStore
 from loguru import logger
 from pymongo import MongoClient
 
+from src.infrastructure.adapters.mongo.MongoStore import MongoStore
 from src.application.service.node.process.ContextNode import ContextNode
 from src.application.service.node.process.Node import Node
 from src.application.service.node.process.RetrieverNode import RetrieverNode
@@ -79,9 +81,9 @@ class DependencyModule(Module):
 
     @singleton
     @provider
-    def provide_context_node(self, mongo_client: MongoClient) -> Node:
+    def provide_context_node(self) -> Node:
         logger.info("Context node")
-        return ContextNode(mongo_client)
+        return ContextNode()
 
     @singleton
     @provider
@@ -103,5 +105,11 @@ class DependencyModule(Module):
                       context_node: ContextNodeKey,
                       mongo_client: MongoClient,
                       global_error_node: GlobalErrorNodeKey,
-                      clarification_more_info: ClarificationOrMoreInfoKey) -> GraphService:
-        return GraphServiceImpl(retriever_node, context_node, summarize_node, mongo_client, global_error_node,clarification_more_info)
+                      clarification_more_info: ClarificationOrMoreInfoKey,
+                      mongo_store: MongoStore) -> GraphService:
+        return GraphServiceImpl(retriever_node, context_node, summarize_node, mongo_client, global_error_node,clarification_more_info, mongo_store)
+
+    @singleton
+    @provider
+    def provide_mongo_store(self, setting: Settings) -> MongoStore:
+        return MongoStore(setting)

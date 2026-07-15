@@ -29,3 +29,4 @@ class Settings:
         self.system_prompt = os.getenv("CHAT_GPT_4_SYSTEM_PROMPT")
         self.chat_gpt_temperature = os.getenv("CHAT_GPT_4_GPT_TEMPERATURE")
         self.chat_gpt_top_p = os.getenv("CHAT_GPT_4_GPT_TOP_P")
+        self.mongo_chat_history_collection = os.getenv("MONGO_COLLECTION_STORE")
