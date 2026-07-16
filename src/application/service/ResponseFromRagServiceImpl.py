@@ -4,8 +4,10 @@ import numpy as np
 from injector import inject
 from langchain_core.documents import Document
 from langchain_core.messages import AIMessage
+from langchain_core.runnables import RunnableConfig
 
 from application.service.graph.GraphService import GraphService
+from infrastructure.adapters.mongo.MongoStore import MongoStore
 from src.application.service.IAService import IAService
 from src.application.service.session.ChatHistoryRepositoryService import ChatHistoryRepositoryService
 from src.domain.model.MultipleDocument import MultipleDocument
@@ -19,12 +21,11 @@ class ResponseFromRagServiceImpl(ResponseFromRagService):
 
     @inject
     def __init__(self, olla_service: Optional[OllamaService], mongo_service: MongoService, settings: Settings,
-                 chat_history_repository: ChatHistoryRepositoryService, ia_service: IAService,
+                 ia_service: IAService,
                  graph_service: GraphService):
         self._olla_service = olla_service
         self._mongo_service = mongo_service
         self._settings = settings
-        self._chat_history_repository = chat_history_repository
         self._ia_service = ia_service
         self._graph_service = graph_service
 

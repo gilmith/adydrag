@@ -7,6 +7,7 @@ from langgraph.constants import START, END
 from langgraph.graph import StateGraph
 from pymongo import MongoClient
 
+from application.service.node.NodeList import NodeList
 from src.application.service.node.eval.EvalNode import EvalNode
 from src.infrastructure.adapters.mongo.MongoStore import MongoStore
 from src.application.service.graph.GraphService import GraphService
@@ -37,19 +38,20 @@ class GraphServiceImpl(GraphService):
 
     def invoke_graph(self, query: str, conversation_id: str):
         config = RunnableConfig(configurable={"thread_id": uuid.uuid4()})
+        config["configurable"]["custom_mongo_store"] = self._mongo_store.get_store()
         result = self._graph_app.invoke({"user_query": query, "conversation_id": conversation_id}, config=config)
         return result.get("llm_response")
 
     def _init_graph(self):
         graph = StateGraph(State)
-        # graph.set_node_defaults(error_handler=self._global_error_node.as_graph_node)
-        graph.add_node("retriever", self._retriever_node.as_graph_node)
-        graph.add_node("context_history", self._context_node.as_graph_node)
-        graph.add_node("summarize", self._summarize_node.as_graph_node)
-        graph.add_node("error_cleanup_node", self._global_error_node.as_graph_node)
-        graph.add_edge(START, "context_history")
-        graph.add_edge("context_history", "retriever")
-        graph.add_edge("retriever", "summarize")
-        graph.add_edge("summarize", END)
+        graph.set_node_defaults(error_handler=self._global_error_node.as_graph_node)
+        graph.add_node(NodeList.RETRIEVER, self._retriever_node.as_graph_node)
+        graph.add_node(NodeList.SUMMARIZE, self._summarize_node.as_graph_node)
+        graph.add_node(NodeList.GLOBAL_ERROR, self._global_error_node.as_graph_node)
+        graph.add_conditional_edges(START,
+                                    self._clarification_more_info_node.route
+                                    )
+        graph.add_edge(NodeList.RETRIEVER, NodeList.SUMMARIZE)
+        graph.add_edge(NodeList.SUMMARIZE, END)
         # buscar como meter un store para tener la conversacion en memoria
         return graph.compile(checkpointer=self._mongo_db_saver, store=self._mongo_store.get_store())

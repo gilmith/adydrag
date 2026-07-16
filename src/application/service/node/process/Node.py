@@ -5,6 +5,7 @@ from typing import Optional, Union
 from langgraph.store.base import BaseStore
 from langgraph.types import Command
 
+from src.application.service.node.NodeList import NodeList
 from src.application.service.exception.NodeException import NodeException
 from src.domain.model.state.StateData import LogMeta, LogLevel, State
 
@@ -38,7 +39,7 @@ class Node(ABC):
                     "error_message": e.message,
                     "error_occurred": True
                 },
-                goto="error_cleanup_node")
+                goto=NodeList.GLOBAL_ERROR)
 
     @abstractmethod
     def execute(self, state: State, store: Optional[BaseStore] = None) -> Union[State, Command]:

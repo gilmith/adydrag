@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from langchain_core.runnables import RunnableConfig
+
 
 class GraphService(ABC):
 

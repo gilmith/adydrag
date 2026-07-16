@@ -65,11 +65,10 @@ class DependencyModule(Module):
     def provide_response(self,
                          ollama_service: OllamaService,
                          mongo_service: MongoService, settings: Settings,
-                         chat_history : ChatHistoryRepositoryService,
                          azure_service: IAService,
                          graph_service: GraphService) -> ResponseFromRagService:
         if ollama_service:
-            return ResponseFromRagServiceImpl(ollama_service, mongo_service, settings, chat_history, azure_service, graph_service)
+            return ResponseFromRagServiceImpl(ollama_service, mongo_service, settings, azure_service, graph_service)
         return None
 
 
